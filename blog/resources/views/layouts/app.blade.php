@@ -14,7 +14,7 @@
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
+    <div id="app" style="display:none">
 
         <topo titulo="{{ config('app.name', 'Laravel') }}" url="{{ url('/') }}">
             <!-- Authentication Links -->
@@ -28,6 +28,9 @@
                     </a>
 
                     <ul class="dropdown-menu">
+                        <li>
+                            <a href="{{route('admin')}}">Admin</a>
+                        </li>
                         <li>
                             <a href="{{ route('logout') }}"
                                onclick="event.preventDefault();
@@ -50,6 +53,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="//cdn.ckeditor.com/4.6.2/full/ckeditor.js"></script>
     <script src="{{ asset('js/app.js') }}"></script>
 </body>
 </html>

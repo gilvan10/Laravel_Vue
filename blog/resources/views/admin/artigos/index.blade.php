@@ -2,53 +2,119 @@
 
 @section('content')
     <pagina tamanho="12">
+
+        @if($errors->all())
+
+                @foreach ($errors->all() as $key => $value)
+                    <li>{{$value}}</li>
+                @endforeach
+                <!--<div class="alert alert-danger alert-dismissible text-center" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                </div>-->
+        @endif
+
         <painel titulo="Lista de Artigos">
             <migalhas v-bind:lista="{{$listaMigalhas}}"></migalhas>
 
 
             <tabela-lista
-                    v-bind:titulos="['#','Título','Descrição']"
-                    v-bind:itens="{{$listaArtigos}}"
-                    ordem="asc" ordemcol="1"
-                    criar="#criar" detalhe="#detalhe" editar="#editar" deletar="#deletar" token="7887522323"
+                    v-bind:titulos="['#','Título','Descrição','Autor','data']"
+                    v-bind:itens="{{json_encode($listaArtigos)}}"
+                    ordem="desc" ordemcol="0"
+                    criar="#criar" detalhe="/admin/artigos/" editar="/admin/artigos/" deletar="/admin/artigos/" token="{{csrf_token()}}"
                     modal="sim"
 
             ></tabela-lista>
-
+            <div align="center">
+                {{$listaArtigos}}
+            </div>
 
         </painel>
     </pagina>
-    <modal nome="adicionar">
-        <painel titulo="Adicionar">
-            <formulario css="" action="#" method="put" enctype="multipart/form-data" token="12345">
+    <modal nome="adicionar" titulo="Adicionar">
 
-                <div class="form-group">
-                    <label for="titulo">Titulo</label>
-                    <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Título">
-                </div>
-                <div class="form-group">
-                    <label for="descricao">Descrição</label>
-                    <input type="text" class="form-control" id="descricao" name="descricao" placeholder="Descricao">
-                </div>
-                <button class="btn btn-info">Adicionar</button>
-            </formulario>
-        </painel>
-    </modal>
-    <modal nome="editar">
-        <painel titulo="Editar">
-            <formulario css="" action="#" method="put" enctype="multipart/form-data" token="12345">
+        <formulario id="formAdicionar" css="" action="{{route('artigos.store')}}" method="post" enctype="" token="{{csrf_token()}}">
 
-                <div class="form-group">
-                    <label for="titulo">Titulo</label>
-                    <input type="text" class="form-control" id="titulo" name="titulo" v-model="$store.state.item.titulo" placeholder="Título">
-                </div>
-                <div class="form-group">
-                    <label for="descricao">Descrição</label>
-                    <input type="text" class="form-control" id="descricao" name="descricao" v-model="$store.state.item.descricao" placeholder="Descricao">
-                </div>
-                <button class="btn btn-info">Editar</button>
-            </formulario>
-        </painel>
+            <div class="form-group">
+                <label for="titulo">Titulo</label>
+                <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Título" value="{{old('titulo')}}">
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <input type="text" class="form-control" id="descricao" name="descricao" placeholder="Descrição" value="{{old('descricao')}}">
+            </div>
+
+            <div class="form-group">
+                <label for="addConteudo">Conteúdo</label>
+                <textarea class="form-control" id="addConteudo" name="conteudo" v-model="$store.state.item.conteudo"></textarea>
+                <!--<ckeditor
+                        id="addConteudo"
+                        name="conteudo"
+                        v-bind:config="{
+                            toolbar: [
+                                [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ]
+                            ],
+                            height: 200
+                         }">
+                </ckeditor>-->
+
+            </div>
+
+            <div class="form-group">
+                <label for="data">Data</label>
+                <input type="date" class="form-control" id="data" name="data" value="{{old('data')}}">
+            </div>
+
+        </formulario>
+        <span slot="botoes">
+            <button form="formAdicionar" class="btn btn-info">Adicionar</button>
+        </span>
+
     </modal>
+    <modal nome="editar" titulo="Editar">
+
+        <formulario id="formEditar" v-bind:action="'/admin/artigos/' + $store.state.item.id" method="put" enctype="" token="{{csrf_token()}}">
+
+            <div class="form-group">
+                <label for="titulo">Titulo</label>
+                <input type="text" class="form-control" id="titulo" name="titulo" v-model="$store.state.item.titulo" placeholder="Título">
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <input type="text" class="form-control" id="descricao" name="descricao" v-model="$store.state.item.descricao" placeholder="Descricao">
+            </div>
+            <div class="form-group">
+                <label for="editConteudo">Conteúdo</label>
+                <textarea class="form-control" id="editConteudo" name="conteudo" v-model="$store.state.item.conteudo"></textarea>
+
+                <!--<ckeditor
+                        id="editConteudo"
+                        name="conteudo"
+                        v-model="$store.state.item.conteudo"
+                        v-bind:config="{
+                            toolbar: [
+                                [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ]
+                            ],
+                            height: 200
+                         }">
+                </ckeditor>-->
+
+            </div>
+
+            <div class="form-group">
+                <label for="data">Data</label>
+                <input type="date" class="form-control" id="data" name="data" v-model="$store.state.item.data">
+            </div>
+        </formulario>
+        <span slot="botoes">
+            <button form="formEditar" class="btn btn-info">Atualizar</button>
+        </span>
+
+    </modal>
+    <modal nome="detalhe" v-bind:titulo="$store.state.item.titulo">
+        <p>@{{$store.state.item.descricao}}</p>
+        <p>@{{$store.state.item.conteudo}}</p>
+    </modal>
+
 
 @endsection

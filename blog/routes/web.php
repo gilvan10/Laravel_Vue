@@ -1,5 +1,7 @@
 <?php
 
+use App\Artigo;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,13 +14,16 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    $lista = Artigo::listaArtigosSite(2);
+    return view('site',compact('lista'));
 });
 
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/admin', 'AdminController@index')->name('admin');
 
 Route::middleware(['auth'])->prefix('admin')->namespace('Admin')->group(function(){
     Route::resource('artigos', 'ArtigosController');
+    Route::resource('usuarios', 'UsuariosController');
+    Route::resource('autores', 'AutoresController');
 });

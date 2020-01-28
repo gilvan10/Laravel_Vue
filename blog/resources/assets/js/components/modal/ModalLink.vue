@@ -15,10 +15,13 @@
 
 <script>
     export default {
-        props:['tipo','nome','titulo','css','item'],
+        props:['tipo','nome','titulo','css','item','url'],
         methods:{
             preencheFormulario: function(){
-                this.$store.commit('setItem',this.item);
+                axios.get(this.url + this.item.id).then(res => {
+                    this.$store.commit('setItem',res.data);
+                });
+                //this.$store.commit('setItem',this.item);
             }
         }
     }

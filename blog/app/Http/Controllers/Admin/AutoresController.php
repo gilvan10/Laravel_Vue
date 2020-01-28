@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Artigo;
-use Illuminate\Support\Facades\DB;
+use App\User;
+use Illuminate\Validation\Rule;
 
-class ArtigosController extends Controller
+class AutoresController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,38 +16,15 @@ class ArtigosController extends Controller
      */
     public function index()
     {
-        //transformação para json para o javascript trabalhar
         $listaMigalhas = json_encode([
             ["titulo"=>"Admin","url"=>route('admin')],
-            ["titulo"=>"Lista de Artigos","url"=>""]
+            ["titulo"=>"Lista de Autores","url"=>""]
 
         ]);
-
-        /*
         //Antes estava o Artigo::all()
-        $listaArtigos = Artigo::select('id','titulo','descricao','user_id','data')->paginate(5);
-        //Está levando o nome dos autores através do servidor mas precisa da instrução de cima.
-        foreach ($listaArtigos as $key => $value) {
-            //Uma forma buscando o usuario pelo user_id e trazendo o nome vinculado;
-            $value->user_id = \App\User::find($value->user_id)->name;
-            //Outra forma de relacionamentos não precisa importar classe App\User
-            //$value->user_id = $value->user->name;
-            //unset($value->user);foi retirado o objeto ususario mas deixou o nome evitando erros
+        $listaModelo = User::select('id','name','email')->where('autor','=','S')->paginate(5);
 
-        }
-        */
-        //uma forma de resolver através do banco de dados para colocar o nome do autor na lista de artigos.
-        /*
-        $listaArtigos = DB::table('artigos')
-                        ->join('users','users.id','=','artigos.user_id')
-                        ->select('artigos.id','artigos.titulo','artigos.descricao','users.name','artigos.data')
-                        ->whereNull('deleted_at')
-                        ->paginate(5);
-
-        */
-        $listaArtigos = Artigo::listaArtigos(5);
-
-        return view('admin.artigos.index',compact('listaMigalhas','listaArtigos'));
+        return view('admin.autores.index',compact('listaMigalhas','listaModelo'));
     }
 
     /**
@@ -73,10 +50,9 @@ class ArtigosController extends Controller
 
         //validação
         $validacao = \Validator::make($data,[
-            "titulo" => "required",
-            "descricao" => "required",
-            "conteudo" => "required",
-            "data" => "required",
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:6',
         ]);
 
         if($validacao->fails()){
@@ -85,7 +61,9 @@ class ArtigosController extends Controller
             return redirect()->back()->withErrors($validacao)->withInput();
         }
 
-        Artigo::create($data);
+        $data['password'] = bcrypt($data['password']);
+
+        User::create($data);
         return redirect()->back();
     }
 
@@ -97,7 +75,7 @@ class ArtigosController extends Controller
      */
     public function show($id)
     {
-        return Artigo::find($id);
+        return User::find($id);
     }
 
     /**
@@ -122,20 +100,33 @@ class ArtigosController extends Controller
     {
         //dd($request->all());
         $data = $request->all();
+        //Video 44
+        //Se existir Password e ele não for vazio
+        //É por que o usuário está atualizando os dados a senha não é mostrada
+        if(isset($data['password']) && $data['password'] != ""){
+            $validacao = \Validator::make($data,[
+                'name' => 'required|string|max:255',
+                'email' => ['required','string','email','max:255',Rule::unique('users')->ignore($id)],
+                'password' => 'required|string|min:6',
 
-        //validação
-        $validacao = \Validator::make($data,[
-            "titulo" => "required",
-            "descricao" => "required",
-            "conteudo" => "required",
-            "data" => "required",
-        ]);
+            ]);
+            $data['password'] = bcrypt($data['password']);
+        }else{
+            //Se entrar é por que não tem essa senha
+            //Faço a validação sem o Password
+            $validacao = \Validator::make($data,[
+                'name' => 'required|string|max:255',
+                'email' => ['required','string','email','max:255',Rule::unique('users')->ignore($id)],
+            ]);
+            //Removo essa senha para não ser cadastrada vazia
+            unset($data['password']);
+        }
 
         if($validacao->fails()){
             return redirect()->back()->withErrors($validacao)->withInput();
         }
 
-        Artigo::find($id)->update($data);
+        User::find($id)->update($data);
         return redirect()->back();
     }
 
@@ -147,7 +138,7 @@ class ArtigosController extends Controller
      */
     public function destroy($id)
     {
-        Artigo::find($id)->delete();
+        User::find($id)->delete();
         return redirect()->back();
     }
 }

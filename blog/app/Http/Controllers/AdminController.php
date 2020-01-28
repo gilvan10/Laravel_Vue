@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\User;
+use App\Artigo;
 
-class HomeController extends Controller
+class AdminController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -25,8 +27,12 @@ class HomeController extends Controller
     {
         //json_encode foi necessario para trabalhar com javascript
         $listaMigalhas = json_encode([
-            ["titulo"=>"Home","url"=>route('home')]
+            ["titulo"=>"Admin","url"=>route('admin')]
         ]);
-        return view('home',compact('listaMigalhas'));
+        $totalArtigos = Artigo::count();
+        $totalUsuarios = User::count();
+        $totalAutores = User::where('autor','=','S')->count();
+
+        return view('admin',compact('listaMigalhas','totalArtigos','totalUsuarios','totalAutores'));
     }
 }
